@@ -26,6 +26,24 @@ app.post("/movies", async (req, res) => {
 
     try {
 
+        // Verifica se já existe um registro com esse nome
+
+        const movieWithSameTitle = await prisma.movie.findFirst({
+            // Se o nome da variável for o MESMO da coluna, podemos omitir 1 deles;
+
+            where: { title: { equals: title, mode: "insensitive" } }
+
+            // Case insensitive significa que se a busca for feita por John Wick, john wick ou JOHN WICK, o registro vai ser retornado na consulta.
+        });
+
+        // Se já tiver o nome no banco, retorna erro 409
+
+        if (movieWithSameTitle) {
+            return res.status(409).send({ message: "Já existe um filme cadastrado com esse título" });
+        }
+
+        // O create é quem cria o novo registro na tabela.
+
         await prisma.movie.create({
             data: {
                 title: title,
@@ -39,7 +57,6 @@ app.post("/movies", async (req, res) => {
     } catch (error) {
         return res.status(500).send({ message: "Falha ao cadastrar um filme" });
     }
-
 
     res.status(201).send();
 });
