@@ -10,6 +10,10 @@ const prisma = new PrismaClient();
 app.use(express.json());
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.get("/", (_, res) => {
+    res.send("Raiz da MovieFlix API");
+});
+
 app.get("/movies", async (_, res) => {
     const movies = await prisma.movie.findMany({
         orderBy: {
