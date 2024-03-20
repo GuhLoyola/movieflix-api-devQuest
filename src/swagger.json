@@ -27,6 +27,43 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Adicionar um filme ",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#components/schemas/MovieInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Filme cadastrado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#components/schemas/Movie"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Já existe um filme cadastrado com esse título"
+                    },
+                    "500": {
+                        "description": "Falha ao cadastrar um filme"
+                    }
+                }
             }
         },
         "/movies/{id}": {
