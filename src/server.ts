@@ -24,12 +24,26 @@ app.get("/movies", async (_, res) => {
             languages: true
         }
     });
-    res.json(movies);
+
+    const totalMovies = movies.length;
+    let totalDuration = 0;
+
+    for (const movie of movies) {
+        totalDuration += movie.duration;
+    }
+
+    const averageDuration = totalMovies > 0 ? totalDuration / totalMovies : 0;
+
+    res.json({
+        totalMovies,
+        averageDuration,
+        movies
+    });
 });
 
 app.post("/movies", async (req, res) => {
 
-    const { title, genre_id, language_id, oscar_count, release_date } = req.body;
+    const { title, genre_id, language_id, oscar_count, release_date, duration } = req.body;
 
     try {
 
@@ -58,7 +72,8 @@ app.post("/movies", async (req, res) => {
                 language_id: language_id,
                 oscar_count: oscar_count,
                 // Aqui o mês começa em 0, então abril = 3
-                release_date: new Date(release_date)
+                release_date: new Date(release_date),
+                duration: duration
             }
         });
     } catch (error) {

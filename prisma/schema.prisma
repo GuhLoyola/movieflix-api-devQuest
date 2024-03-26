@@ -30,6 +30,7 @@ model Movie {
   genre_id     Int?
   language_id  Int?
   oscar_count  Int?
+  duration     Int
   genres       Genre?    @relation(fields: [genre_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre")
   languages    Language? @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_language")
 
