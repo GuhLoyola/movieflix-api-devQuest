@@ -1,5 +1,5 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json";
 
@@ -14,31 +14,111 @@ app.get("/", (_, res) => {
     res.send("Raiz da MovieFlix API");
 });
 
-app.get("/movies", async (_, res) => {
-    const movies = await prisma.movie.findMany({
-        orderBy: {
+app.get("/movies/filter", async (req, res) => {
+    const { language, sort } = req.query;
+    const languageName = language as string;
+    const sortName = sort as string;
+
+    let orderBy = {};
+    if (sortName === "title") {
+        orderBy = {
             title: "asc",
-        },
-        include: {
-            genres: true,
-            languages: true
-        }
-    });
-
-    const totalMovies = movies.length;
-    let totalDuration = 0;
-
-    for (const movie of movies) {
-        totalDuration += movie.duration;
+        };
+    } else if (sortName === "release_date") {
+        orderBy = {
+            release_date: "asc",
+        };
     }
 
-    const averageDuration = totalMovies > 0 ? totalDuration / totalMovies : 0;
+    let where = {};
+    if (languageName) {
+        where = {
+            languages: {
+                name: {
+                    equals: languageName,
+                    mode: "insensitive",
+                },
+            },
+        };
+    }
 
-    res.json({
-        totalMovies,
-        averageDuration,
-        movies
-    });
+    try {
+        const movies = await prisma.movie.findMany({
+            orderBy,
+            where: where,
+            include: {
+                genres: true,
+                languages: true,
+            },
+        });
+
+        res.json(movies);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Houve um problema ao buscar os filmes." });
+    }
+});
+
+app.get("/movies/language", async (req, res) => {
+    const { language } = req.query;
+    const languageName = language as string;
+
+    let where = {};
+    if (languageName) {
+        where = {
+            languages: {
+                name: {
+                    equals: languageName,
+                    mode: "insensitive",
+                },
+            },
+        };
+    }
+
+    try {
+        const movies = await prisma.movie.findMany({
+            where: where,
+            include: {
+                genres: true,
+                languages: true,
+            },
+        });
+
+        res.json(movies);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Houve um problema ao buscar os filmes." });
+    }
+});
+
+app.get("/movies/sort", async (req, res) => {
+    const { sort } = req.query;
+    console.log(sort);
+    let orderBy: Prisma.MovieOrderByWithRelationInput | Prisma.MovieOrderByWithRelationInput[] | undefined;
+    if (sort === "title") {
+        orderBy = {
+            title: "asc",
+        };
+    } else if (sort === "release_date") {
+        orderBy = {
+            release_date: "asc",
+        };
+    }
+
+    try {
+        const movies = await prisma.movie.findMany({
+            orderBy,
+            include: {
+                genres: true,
+                languages: true,
+            },
+        });
+
+        res.json(movies);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Houve um problema ao buscar os filmes." });
+    }
 });
 
 app.post("/movies", async (req, res) => {
